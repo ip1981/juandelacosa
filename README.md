@@ -25,19 +25,19 @@ Usage
 =====
 Type `juandelacosa --help` to see usage summary:
 
-    Usage:
-      juandelacosa [options]
+    Usage: juandelacosa [-f|--file FILE] [-g|--group STRING] [-d|--datadir DIR]
+                        [(-p|--port INT) | (-s|--socket PATH)]
 
-    Options:
-      -f, --file=MYCNF         Read this MySQL client config file
-      -g, --group=GROUP        Read this options group in the above file [default: client]
-
-      -d, --datadir=DIR        Data directory including static files [default: <cabal data dir>]
-
-      -s, --socket=SOCK        Listen on this UNIX-socket [default: /tmp/juandelacosa.sock]
-      -p, --port=PORT          Instead of UNIX-socket, listen on this TCP port (localhost)
-
-      -h, --help               Show this message
+    Available options:
+      -f,--file FILE           Read this MySQL client config file
+      -g,--group STRING        Read this options group in the above file
+                               (default: "client")
+      -d,--datadir DIR         Data directory including static files
+                               (default: "...")
+      -p,--port INT            listen on this TCP port (localhost only)
+      -s,--socket PATH         Listen on this UNIX-socket
+                               (default: "/tmp/juandelacosa.sock")
+      -h,--help                Show this help text
 
 
 Database Privileges
@@ -53,6 +53,6 @@ GRANT SELECT ON `mysql`.`user` TO 'juandelacosa'@'localhost';
 Screenshots
 ===========
 ![Reset Password](./screenshots/resetpassword.png)
-![Password Chnaged](./screenshots/passwordchanged.png)
+![Password Changed](./screenshots/passwordchanged.png)
 ![No Account](./screenshots/noaccout.png)
 

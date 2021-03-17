@@ -1,3 +1,10 @@
+0.1.2
+=====
+
+* Rewrite to use `optparse-applicative` instead of `docopt`.
+* Rewrite to use `getAddrInfo` instead of `inet_addr`.
+
+
 0.1.1
 =====
 
