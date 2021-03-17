@@ -1,73 +1,113 @@
-{-# LANGUAGE QuasiQuotes #-}
-
-module Main (
-  main
-) where
+module Main
+  ( main
+  ) where
 
 import Data.ByteString.Char8 (pack)
-import Data.Maybe (fromJust)
 import Data.Version (showVersion)
 import Database.MySQL.Base (ConnectInfo(..))
 import Database.MySQL.Base.Types (Option(ReadDefaultFile, ReadDefaultGroup))
 import Paths_juandelacosa (getDataDir, version) -- from cabal
-import System.Environment (getArgs)
-import Text.InterpolatedString.Perl6 (qc)
-import qualified System.Console.Docopt.NoTH as O
+import System.IO.Unsafe (unsafePerformIO)
 
-import Server (server)
+import Options.Applicative
+  ( Parser
+  , (<**>)
+  , (<|>)
+  , auto
+  , execParser
+  , fullDesc
+  , header
+  , help
+  , helper
+  , info
+  , long
+  , metavar
+  , option
+  , optional
+  , short
+  , showDefault
+  , strOption
+  , value
+  )
 
-usage :: IO String
-usage = do
-  dataDir <- getDataDir
-  return $
-    "juandelacosa " ++ showVersion version
-    ++ " manage MariaDB user and roles" ++ [qc|
+import Server (Listen(Port, Socket), server)
 
-Usage:
-  juandelacosa [options]
+data Config =
+  Config
+    { file :: Maybe FilePath
+    , group :: String
+    , datadir :: FilePath
+    , listen :: Listen
+    }
 
-Options:
-  -f, --file=MYCNF         Read this MySQL client config file
-  -g, --group=GROUP        Read this options group in the above file [default: client]
+parseListen :: Parser Listen
+parseListen = port <|> socket
+  where
+    port =
+      Port <$>
+      option
+        auto
+        (long "port" <>
+         short 'p' <>
+         metavar "INT" <> help "listen on this TCP port (localhost only)")
+    socket =
+      Socket <$>
+      option
+        auto
+        (long "socket" <>
+         short 's' <>
+         metavar "PATH" <>
+         value "/tmp/juandelacosa.sock" <>
+         showDefault <> help "Listen on this UNIX-socket")
 
-  -d, --datadir=DIR        Data directory including static files [default: {dataDir}]
+{-# NOINLINE dataDir #-}
+dataDir :: FilePath
+dataDir = unsafePerformIO getDataDir
 
-  -s, --socket=SOCK        Listen on this UNIX-socket [default: /tmp/juandelacosa.sock]
-  -p, --port=PORT          Instead of UNIX-socket, listen on this TCP port (localhost)
+parseConfig :: Parser Config
+parseConfig =
+  Config <$>
+  optional
+    (strOption
+       (long "file" <>
+        short 'f' <> metavar "FILE" <> help "Read this MySQL client config file")) <*>
+  strOption
+    (long "group" <>
+     short 'g' <>
+     metavar "STRING" <>
+     value "client" <>
+     showDefault <> help "Read this options group in the above file") <*>
+  strOption
+    (long "datadir" <>
+     short 'd' <>
+     metavar "DIR" <>
+     value dataDir <>
+     showDefault <> help "Data directory including static files") <*>
+  parseListen
 
-  -h, --help               Show this message
+run :: Config -> IO ()
+run cfg = do
+  let myInfo =
+        ConnectInfo
+          { connectDatabase = ""
+          , connectHost = ""
+          , connectOptions =
+              case file cfg of
+                Nothing -> []
+                Just f ->
+                  [ReadDefaultFile f, ReadDefaultGroup (pack $ group cfg)]
+          , connectPassword = ""
+          , connectPath = ""
+          , connectPort = 0
+          , connectSSL = Nothing
+          , connectUser = ""
+          }
+  server (listen cfg) myInfo (datadir cfg)
 
-|]
-
-main :: IO()
-main = do
-  doco <- O.parseUsageOrExit =<< usage
-  args <- O.parseArgsOrExit doco =<< getArgs
-  if args `O.isPresent` O.longOption "help"
-  then putStrLn $ O.usage doco
-  else do
-    let
-      file = O.getArg args $ O.longOption "file"
-      group = fromJust $ O.getArg args $ O.longOption "group"
-      port = O.getArg args $ O.longOption "port"
-      socket = fromJust $ O.getArg args $ O.longOption "socket"
-      datadir = fromJust $ O.getArg args $ O.longOption "datadir"
-    -- XXX: mysql package maps empty strings to NULL
-    -- which is what we need, see documentation for mysql_real_connect()
-    let myInfo = ConnectInfo {
-        connectDatabase = "",
-        connectHost     = "",
-        connectOptions  = case file of
-                          Nothing -> []
-                          Just f -> [ ReadDefaultFile f, ReadDefaultGroup (pack group) ],
-        connectPassword = "",
-        connectPath     = "",
-        connectPort     = 0,
-        connectSSL      = Nothing,
-        connectUser     = ""
-      }
-    let listen = case port of
-          Nothing -> Right socket
-          Just p -> Left $ read p
-    server listen myInfo datadir
-
+main :: IO ()
+main = run =<< execParser opts
+  where
+    opts = info (parseConfig <**> helper) (fullDesc <> header desc)
+    desc =
+      "juandelacosa " ++
+      showVersion version ++ " - manage MariaDB user and roles"

@@ -39,15 +39,14 @@ executable juandelacosa
       , base64-bytestring        >= 1.0
       , bytestring               >= 0.10
       , data-default-class
-      , docopt                   >= 0.7
       , entropy                  >= 0.3
       , fast-logger
       , http-types               >= 0.9
-      , interpolatedstring-perl6 >= 1.0
       , mtl                      >= 2.2
       , mysql                    >= 0.1
       , mysql-simple             >= 0.2
       , network                  >= 2.6
+      , optparse-applicative     >= 0.13.0.0
       , resource-pool            >= 0.2
       , scotty                   >= 0.10
       , text                     >= 1.2
