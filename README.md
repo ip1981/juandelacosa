@@ -2,11 +2,11 @@ Juan de la Cosa
 ===============
 
 HTTP server for managing [MariaDB](http://mariadb.org/) users.
-Designed to work behind [Sproxy](http://hackage.haskell.org/package/sproxy2).
-and assuming users' logins are their email addresses
+Designed to work behind [Sproxy](http://hackage.haskell.org/package/sproxy2)
+with users' logins being their email addresses
 (MariaDB allows up to 80 characters).
 
-Currently it only let users get new passwords.
+Currently it only lets users reset their passwords.
 
 Requirements
 ============
@@ -15,11 +15,6 @@ All required Haskell libraries are listed in [juandelacosa.cabal](juandelacosa.c
 Use [cabal-install](http://www.haskell.org/haskellwiki/Cabal-Install)
 to fetch and build all pre-requisites automatically.
 
-Installation
-============
-    $ git clone https://github.com/ip1981/juandelacosa.git
-    $ cd juandelacosa
-    $ cabal install
 
 Usage
 =====
