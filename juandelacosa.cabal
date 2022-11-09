@@ -1,6 +1,6 @@
+cabal-version:      1.20
 name:               juandelacosa
 version:            0.1.2
-cabal-version:      1.20
 license:            MIT
 license-file:       LICENSE
 copyright:          2016, Zalora South East Asia Pte. Ltd
@@ -43,9 +43,9 @@ executable juandelacosa
         base >=4.8 && <50,
         base64-bytestring >=1.0,
         bytestring >=0.10,
-        data-default-class -any,
+        data-default-class,
         entropy >=0.3,
-        fast-logger -any,
+        fast-logger,
         http-types >=0.9,
         mtl >=2.2,
         mysql >=0.1,
